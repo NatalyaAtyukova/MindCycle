@@ -17,48 +17,52 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFFE91E63),
+    primary = PrimaryPink,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFFFD9E2),
-    onPrimaryContainer = Color(0xFF3B001D),
-    secondary = Color(0xFF9C27B0),
-    onSecondary = Color.White,
-    secondaryContainer = Color(0xFFF3D9F7),
-    onSecondaryContainer = Color(0xFF2D0030),
-    tertiary = Color(0xFF2196F3),
+    primaryContainer = SoftPink,
+    onPrimaryContainer = TextPrimary,
+    secondary = SecondaryPink,
+    onSecondary = TextPrimary,
+    secondaryContainer = LightPink,
+    onSecondaryContainer = TextPrimary,
+    tertiary = AccentPink,
     onTertiary = Color.White,
-    tertiaryContainer = Color(0xFFD1E4FF),
-    onTertiaryContainer = Color(0xFF001D36),
-    background = Color(0xFFFFFBFE),
-    onBackground = Color(0xFF1C1B1F),
-    surface = Color(0xFFFFFBFE),
-    onSurface = Color(0xFF1C1B1F)
+    tertiaryContainer = SoftPink,
+    onTertiaryContainer = TextPrimary,
+    background = BackgroundLight,
+    onBackground = TextPrimary,
+    surface = BackgroundLight,
+    onSurface = TextPrimary,
+    surfaceVariant = LightPink,
+    onSurfaceVariant = TextSecondary
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFFFF80AB),
-    onPrimary = Color(0xFF3B001D),
-    primaryContainer = Color(0xFF9C1147),
-    onPrimaryContainer = Color(0xFFFFD9E2),
-    secondary = Color(0xFFCE93D8),
-    onSecondary = Color(0xFF2D0030),
-    secondaryContainer = Color(0xFF6A0080),
-    onSecondaryContainer = Color(0xFFF3D9F7),
-    tertiary = Color(0xFF90CAF9),
-    onTertiary = Color(0xFF001D36),
-    tertiaryContainer = Color(0xFF00497D),
-    onTertiaryContainer = Color(0xFFD1E4FF),
-    background = Color(0xFF1C1B1F),
-    onBackground = Color(0xFFE6E1E5),
-    surface = Color(0xFF1C1B1F),
-    onSurface = Color(0xFFE6E1E5)
+    primary = PrimaryPink,
+    onPrimary = Color.White,
+    primaryContainer = DarkPink,
+    onPrimaryContainer = Color.White,
+    secondary = SecondaryPink,
+    onSecondary = Color.White,
+    secondaryContainer = AccentPink,
+    onSecondaryContainer = Color.White,
+    tertiary = SoftPink,
+    onTertiary = TextPrimary,
+    tertiaryContainer = DarkPink,
+    onTertiaryContainer = Color.White,
+    background = BackgroundDark,
+    onBackground = Color.White,
+    surface = BackgroundDark,
+    onSurface = Color.White,
+    surfaceVariant = Color(0xFF3D2B3D),
+    onSurfaceVariant = Color.White
 )
 
 @Composable
 fun MindCycleTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false, // Отключаем динамические цвета, чтобы использовать нашу тему
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

@@ -2,10 +2,20 @@ package com.vpn.mindcycle.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
+// Основные цвета
+val PrimaryPink = Color(0xFFFF69B4) // Яркий розовый
+val SecondaryPink = Color(0xFFFFB6C1) // Светло-розовый
+val AccentPink = Color(0xFFFF1493) // Глубокий розовый
 
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
+// Фоновые цвета
+val BackgroundLight = Color(0xFFFFF0F5) // Светло-розовый фон
+val BackgroundDark = Color(0xFF2D1B2D) // Тёмный фон
+
+// Текстовые цвета
+val TextPrimary = Color(0xFF4A4A4A) // Основной текст
+val TextSecondary = Color(0xFF757575) // Вторичный текст
+
+// Дополнительные цвета
+val SoftPink = Color(0xFFFFC0CB) // Мягкий розовый
+val LightPink = Color(0xFFFFE4E1) // Очень светлый розовый
+val DarkPink = Color(0xFFDB7093) // Тёмно-розовый

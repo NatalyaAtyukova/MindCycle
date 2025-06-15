@@ -6,25 +6,26 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
-import com.jakewharton.threetenabp.AndroidThreeTen
 import com.vpn.mindcycle.data.db.MoodDatabase
 import com.vpn.mindcycle.data.model.MoodEntry
 import com.vpn.mindcycle.ui.navigation.AppNavigation
 import com.vpn.mindcycle.ui.theme.MindCycleTheme
-import com.vpn.mindcycle.ui.viewmodel.MoodViewModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.threeten.bp.LocalDate
 
 class MainActivity : ComponentActivity() {
+    private lateinit var database: MoodDatabase
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        AndroidThreeTen.init(this)
-
-        val database = Room.databaseBuilder(
+        database = Room.databaseBuilder(
             applicationContext,
             MoodDatabase::class.java,
             "mood_database"
@@ -36,24 +37,25 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MindCycleApp(database)
+                    val navController = rememberNavController()
+                    val entries by database.moodEntryDao()
+                        .getEntriesBetweenDates(
+                            LocalDate.now().minusMonths(1),
+                            LocalDate.now().plusMonths(1)
+                        )
+                        .collectAsState(initial = emptyList())
+
+                    AppNavigation(
+                        navController = navController,
+                        entries = entries,
+                        onAddEntry = { entry: MoodEntry ->
+                            CoroutineScope(Dispatchers.IO).launch {
+                                database.moodEntryDao().insertEntry(entry)
+                            }
+                        }
+                    )
                 }
             }
         }
     }
-}
-
-@Composable
-fun MindCycleApp(database: MoodDatabase) {
-    val navController = rememberNavController()
-    val viewModel: MoodViewModel = viewModel(
-        factory = MoodViewModel.Factory(database.moodEntryDao())
-    )
-
-    AppNavigation(
-        navController = navController,
-        onSaveEntry = { entry ->
-            viewModel.addEntry(entry)
-        }
-    )
 }
