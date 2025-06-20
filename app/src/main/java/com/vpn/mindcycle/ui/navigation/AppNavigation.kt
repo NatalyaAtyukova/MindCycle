@@ -25,6 +25,7 @@ object AppDestinations {
     const val CALENDAR_ROUTE = "calendar"
     const val ADD_ENTRY_ROUTE = "add_entry"
     const val ENTRIES_LIST_ROUTE = "entries_list"
+    const val ENTRY_ID_ARG = "entryId"
 }
 
 @Composable
@@ -48,7 +49,10 @@ fun AppNavigation(
                     entries = entries,
                     cyclePrediction = cyclePrediction,
                     onNavigateToAddEntry = {
-                        navController.navigate(AppDestinations.ADD_ENTRY_ROUTE)
+                        navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=-1")
+                    },
+                    onNavigateToEditEntry = { entryId ->
+                        navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=$entryId")
                     },
                     onNavigateToEntriesList = {
                         navController.navigate(AppDestinations.ENTRIES_LIST_ROUTE)
@@ -56,8 +60,23 @@ fun AppNavigation(
                 )
             }
 
-            composable(AppDestinations.ADD_ENTRY_ROUTE) {
+            composable(
+                route = "${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}={${AppDestinations.ENTRY_ID_ARG}}",
+                arguments = listOf(
+                    androidx.navigation.navArgument(AppDestinations.ENTRY_ID_ARG) {
+                        type = androidx.navigation.NavType.LongType
+                        defaultValue = -1L
+                    }
+                )
+            ) { backStackEntry ->
+                val entryId = backStackEntry.arguments?.getLong(AppDestinations.ENTRY_ID_ARG)
+                val entryToEdit = if (entryId != null && entryId != -1L) {
+                    entries.find { it.id == entryId }
+                } else {
+                    null
+                }
                 AddEntryScreen(
+                    entryToEdit = entryToEdit,
                     onSaveEntry = { entry ->
                         onAddEntry(entry)
                         navController.navigateUp()

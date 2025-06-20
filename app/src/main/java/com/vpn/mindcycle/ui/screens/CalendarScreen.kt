@@ -83,6 +83,7 @@ fun CalendarScreen(
     entries: List<MoodEntry>,
     cyclePrediction: CyclePrediction?,
     onNavigateToAddEntry: () -> Unit,
+    onNavigateToEditEntry: (Long) -> Unit,
     onNavigateToEntriesList: () -> Unit
 ) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
@@ -245,6 +246,7 @@ fun CalendarScreen(
                                     .padding(2.dp)
                                     .background(
                                         when {
+                                            entry?.isPeriodStart == true -> Color.Red.copy(alpha = 0.5f)
                                             isPredictedPeriod -> Color(0xFFFFE4E1)
                                             isPredictedOvulation -> Color(0xFFE6E6FA)
                                             isSelected -> MaterialTheme.colorScheme.primaryContainer
@@ -289,7 +291,11 @@ fun CalendarScreen(
     if (showDayDetails && selectedEntry != null) {
         DayDetailsDialog(
             entry = selectedEntry!!,
-            onDismissRequest = { showDayDetails = false }
+            onDismissRequest = { showDayDetails = false },
+            onEdit = {
+                onNavigateToEditEntry(selectedEntry!!.id)
+                showDayDetails = false
+            }
         )
     }
 }
@@ -298,7 +304,8 @@ fun CalendarScreen(
 @Composable
 fun DayDetailsDialog(
     entry: MoodEntry,
-    onDismissRequest: () -> Unit
+    onDismissRequest: () -> Unit,
+    onEdit: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismissRequest,
@@ -387,6 +394,11 @@ fun DayDetailsDialog(
         confirmButton = {
             TextButton(onClick = onDismissRequest) {
                 Text("Закрыть")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onEdit) {
+                Text("Редактировать")
             }
         }
     )

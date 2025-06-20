@@ -54,16 +54,17 @@ import org.threeten.bp.ZoneId
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun AddEntryScreen(
+    entryToEdit: MoodEntry?,
     onNavigateBack: () -> Unit,
     onSaveEntry: (MoodEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedMood by remember { mutableStateOf<MoodLevel?>(null) }
-    var selectedPhase by remember { mutableStateOf<CyclePhase?>(null) }
-    var note by remember { mutableStateOf("") }
-    var isPeriodStart by remember { mutableStateOf(false) }
-    var selectedSymptoms by remember { mutableStateOf(setOf<String>()) }
-    var entryDate by remember { mutableStateOf(LocalDateTime.now()) }
+    var selectedMood by remember { mutableStateOf(entryToEdit?.moodLevel) }
+    var selectedPhase by remember { mutableStateOf(entryToEdit?.cyclePhase) }
+    var note by remember { mutableStateOf(entryToEdit?.note ?: "") }
+    var isPeriodStart by remember { mutableStateOf(entryToEdit?.isPeriodStart ?: false) }
+    var selectedSymptoms by remember { mutableStateOf(entryToEdit?.symptoms?.toSet() ?: emptySet()) }
+    var entryDate by remember { mutableStateOf(entryToEdit?.date ?: LocalDateTime.now()) }
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -414,16 +415,16 @@ fun AddEntryScreen(
             Button(
                 onClick = {
                     if (selectedMood != null && selectedPhase != null) {
-                        onSaveEntry(
-                            MoodEntry.create(
-                                date = entryDate,
-                                moodLevel = selectedMood!!,
-                                cyclePhase = selectedPhase!!,
-                                note = note,
-                                symptoms = selectedSymptoms.toList(),
-                                isPeriodStart = isPeriodStart
-                            )
+                        val entry = MoodEntry(
+                            id = entryToEdit?.id ?: 0,
+                            date = entryDate,
+                            moodLevel = selectedMood!!,
+                            cyclePhase = selectedPhase!!,
+                            note = note,
+                            symptoms = selectedSymptoms.toList(),
+                            isPeriodStart = isPeriodStart
                         )
+                        onSaveEntry(entry)
                         onNavigateBack()
                     }
                 },

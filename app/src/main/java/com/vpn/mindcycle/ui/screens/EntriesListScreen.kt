@@ -21,6 +21,43 @@ import com.vpn.mindcycle.data.model.CyclePhase
 import com.vpn.mindcycle.data.model.MoodEntry
 import com.vpn.mindcycle.data.model.MoodLevel
 import org.threeten.bp.format.DateTimeFormatter
+import androidx.compose.material.icons.filled.*
+
+private val moodIcons = mapOf(
+    MoodLevel.VERY_BAD to Icons.Filled.MoodBad,
+    MoodLevel.BAD to Icons.Filled.SentimentDissatisfied,
+    MoodLevel.NEUTRAL to Icons.Filled.Psychology,
+    MoodLevel.GOOD to Icons.Filled.SentimentSatisfied,
+    MoodLevel.VERY_GOOD to Icons.Filled.SentimentVerySatisfied,
+    MoodLevel.EXCELLENT to Icons.Filled.Star
+)
+
+private val moodLabels = mapOf(
+    MoodLevel.VERY_BAD to "Очень плохо",
+    MoodLevel.BAD to "Плохо",
+    MoodLevel.NEUTRAL to "Нейтрально",
+    MoodLevel.GOOD to "Хорошо",
+    MoodLevel.VERY_GOOD to "Очень хорошо",
+    MoodLevel.EXCELLENT to "Отлично"
+)
+
+private val phaseIcons = mapOf(
+    CyclePhase.MENSTRUATION to Icons.Filled.Bloodtype,
+    CyclePhase.FOLLICULAR to Icons.Filled.Spa,
+    CyclePhase.OVULATION to Icons.Filled.WbSunny,
+    CyclePhase.LUTEAL to Icons.Filled.Nightlight,
+    CyclePhase.PMS to Icons.Filled.MoodBad,
+    CyclePhase.NONE to Icons.Filled.RemoveCircle
+)
+
+private val phaseLabels = mapOf(
+    CyclePhase.MENSTRUATION to "Менструация",
+    CyclePhase.FOLLICULAR to "Фолликулярная",
+    CyclePhase.OVULATION to "Овуляция",
+    CyclePhase.LUTEAL to "Лютеиновая",
+    CyclePhase.PMS to "ПМС",
+    CyclePhase.NONE to "Нет"
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,13 +95,24 @@ fun EntriesListScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text("Настроение: ${entry.moodLevel}")
-                        Text("Фаза цикла: ${entry.cyclePhase}")
+                        
+                        // Mood
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(moodIcons[entry.moodLevel] ?: Icons.Default.HelpOutline, contentDescription = "Mood", modifier = Modifier.padding(end = 8.dp))
+                            Text(moodLabels[entry.moodLevel] ?: entry.moodLevel.toString())
+                        }
+                        
+                        // Cycle Phase
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(phaseIcons[entry.cyclePhase] ?: Icons.Default.HelpOutline, contentDescription = "Cycle Phase", modifier = Modifier.padding(end = 8.dp))
+                            Text(phaseLabels[entry.cyclePhase] ?: entry.cyclePhase.toString())
+                        }
+
                         if (entry.symptoms.isNotEmpty()) {
                             Text("Симптомы: ${entry.symptoms.joinToString(", ")}")
                         }
                         if (!entry.note.isNullOrEmpty()) {
-                            Text("Заметки: $entry.note")
+                            Text("Заметки: ${entry.note}")
                         }
                         if (entry.isPeriodStart) {
                             Text("Начало менструации")

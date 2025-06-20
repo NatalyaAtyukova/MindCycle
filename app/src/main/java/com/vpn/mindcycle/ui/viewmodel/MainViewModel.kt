@@ -41,7 +41,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             try {
                 moodEntryDao.insertEntry(entry)
-                _entries.value = _entries.value + entry
+                // Reload all entries to reflect the change (add or update)
+                val endDate = LocalDateTime.now()
+                val startDate = endDate.minus(3, ChronoUnit.MONTHS)
+                _entries.value = moodEntryDao.getEntriesBetweenDates(startDate, endDate)
                 // _cyclePrediction.value = moodEntryDao.predictNextCycle()
             } catch (e: Exception) {
                 throw Exception("Failed to add entry: ${e.message}")
