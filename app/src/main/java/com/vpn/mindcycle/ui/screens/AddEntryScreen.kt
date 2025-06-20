@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import com.vpn.mindcycle.data.model.CyclePhase
 import com.vpn.mindcycle.data.model.MoodEntry
 import com.vpn.mindcycle.data.model.MoodLevel
-import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -29,13 +29,13 @@ fun AddEntryScreen(
     onSaveEntry: (MoodEntry) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var selectedMood by remember { mutableStateOf<MoodLevel?>(null) }
-    var selectedCyclePhase by remember { mutableStateOf<CyclePhase?>(null) }
-    var note by remember { mutableStateOf("") }
-    var selectedSymptoms by remember { mutableStateOf(setOf<String>()) }
+    var selectedPhase by remember { mutableStateOf<CyclePhase?>(null) }
+    var symptoms by remember { mutableStateOf("") }
+    var notes by remember { mutableStateOf("") }
+    var isPeriodStart by remember { mutableStateOf(false) }
 
-    val symptoms = listOf(
+    val symptomsList = listOf(
         "Усталость", "Боль", "Раздражение", "Тревога",
         "Головная боль", "Спазмы", "Вздутие", "Бессонница"
     )
@@ -69,260 +69,101 @@ fun AddEntryScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            // Date selector
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+            Text(
+                text = "Добавить запись",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+
+            // Выбор настроения
+            Text("Настроение", style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        "Дата",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        selectedDate.toString(),
-                        style = MaterialTheme.typography.bodyLarge
+                MoodLevel.values().forEach { mood ->
+                    FilterChip(
+                        selected = selectedMood == mood,
+                        onClick = { selectedMood = mood },
+                        label = { Text(mood.toString()) }
                     )
                 }
             }
 
-            // Mood selection
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        "Настроение",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
-                    ) {
-                        MoodLevel.values().forEach { mood ->
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                modifier = Modifier
-                                    .selectable(
-                                        selected = selectedMood == mood,
-                                        onClick = { selectedMood = mood }
-                                    )
-                                    .padding(8.dp)
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(48.dp)
-                                        .clip(CircleShape)
-                                        .background(
-                                            if (selectedMood == mood) 
-                                                MaterialTheme.colorScheme.primary 
-                                            else 
-                                                MaterialTheme.colorScheme.surface
-                                        ),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = when (mood) {
-                                            MoodLevel.VERY_BAD -> "😫"
-                                            MoodLevel.BAD -> "😔"
-                                            MoodLevel.NEUTRAL -> "😐"
-                                            MoodLevel.GOOD -> "🙂"
-                                            MoodLevel.EXCELLENT -> "😊"
-                                        },
-                                        style = MaterialTheme.typography.headlineMedium
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Cycle phase selection
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+            // Выбор фазы цикла
+            Text("Фаза цикла", style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        "Фаза цикла",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    CyclePhase.values().forEach { phase ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .selectable(
-                                    selected = selectedCyclePhase == phase,
-                                    onClick = { selectedCyclePhase = phase }
-                                )
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            RadioButton(
-                                selected = selectedCyclePhase == phase,
-                                onClick = { selectedCyclePhase = phase },
-                                colors = RadioButtonDefaults.colors(
-                                    selectedColor = MaterialTheme.colorScheme.primary
-                                )
-                            )
-                            Text(
-                                text = when (phase) {
-                                    CyclePhase.MENSTRUATION -> "Менструация"
-                                    CyclePhase.FOLLICULAR -> "Фолликулярная фаза"
-                                    CyclePhase.OVULATION -> "Овуляция"
-                                    CyclePhase.LUTEAL -> "Лютеиновая фаза"
-                                    CyclePhase.PMS -> "ПМС"
-                                    CyclePhase.NONE -> "Не выбрано"
-                                },
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Symptoms selection
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        "Симптомы",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    symptoms.forEach { symptom ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Checkbox(
-                                checked = symptom in selectedSymptoms,
-                                onCheckedChange = { checked ->
-                                    selectedSymptoms = if (checked) {
-                                        selectedSymptoms + symptom
-                                    } else {
-                                        selectedSymptoms - symptom
-                                    }
-                                },
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = MaterialTheme.colorScheme.primary
-                                )
-                            )
-                            Text(
-                                text = symptom,
-                                modifier = Modifier.padding(start = 8.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            // Note field
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        "Заметка",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = note,
-                        onValueChange = { note = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 3,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = MaterialTheme.colorScheme.primary,
-                            focusedLabelColor = MaterialTheme.colorScheme.primary
-                        )
+                CyclePhase.values().forEach { phase ->
+                    FilterChip(
+                        selected = selectedPhase == phase,
+                        onClick = { selectedPhase = phase },
+                        label = { Text(phase.toString()) }
                     )
                 }
             }
 
-            // Save button
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Симптомы
+            OutlinedTextField(
+                value = symptoms,
+                onValueChange = { symptoms = it },
+                label = { Text("Симптомы") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Заметки
+            OutlinedTextField(
+                value = notes,
+                onValueChange = { notes = it },
+                label = { Text("Заметки") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Переключатель начала менструации
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Начало менструации")
+                Spacer(modifier = Modifier.weight(1f))
+                Switch(
+                    checked = isPeriodStart,
+                    onCheckedChange = { isPeriodStart = it }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             Button(
                 onClick = {
-                    selectedMood?.let { mood ->
+                    if (selectedMood != null && selectedPhase != null) {
                         onSaveEntry(
                             MoodEntry(
-                                date = selectedDate,
-                                moodLevel = mood,
-                                cyclePhase = selectedCyclePhase ?: CyclePhase.NONE,
-                                symptoms = selectedSymptoms.toList(),
-                                note = note
+                                date = LocalDateTime.now(),
+                                moodLevel = selectedMood!!,
+                                cyclePhase = selectedPhase!!,
+                                symptoms = symptoms.split(",").map { it.trim() },
+                                notes = notes.takeIf { it.isNotBlank() },
+                                isPeriodStart = isPeriodStart
                             )
                         )
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                enabled = selectedMood != null,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(16.dp)
+                modifier = Modifier.fillMaxWidth(),
+                enabled = selectedMood != null && selectedPhase != null
             ) {
-                Text(
-                    "Сохранить",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                )
+                Text("Сохранить")
             }
-            
-            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 } 

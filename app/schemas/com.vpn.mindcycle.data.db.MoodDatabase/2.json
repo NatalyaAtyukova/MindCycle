@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "database": {
-    "version": 1,
-    "identityHash": "7aed16ca3f56f2cb9468f6985f5a219a",
+    "version": 2,
+    "identityHash": "a2b71a9cbd10ebc5f8364e5dfdfc2723",
     "entities": [
       {
         "tableName": "mood_entries",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` TEXT NOT NULL, `moodLevel` INTEGER NOT NULL, `cyclePhase` TEXT NOT NULL, `notes` TEXT, `symptoms` TEXT NOT NULL, `isPeriodStart` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `timestamp` TEXT NOT NULL, `moodLevel` TEXT NOT NULL, `cyclePhase` TEXT NOT NULL, `symptoms` TEXT NOT NULL, `notes` TEXT, `isPeriodStart` INTEGER NOT NULL, `cycleLength` INTEGER)",
         "fields": [
           {
             "fieldPath": "id",
@@ -15,20 +15,26 @@
             "notNull": true
           },
           {
-            "fieldPath": "date",
-            "columnName": "date",
+            "fieldPath": "timestamp",
+            "columnName": "timestamp",
             "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "moodLevel",
             "columnName": "moodLevel",
-            "affinity": "INTEGER",
+            "affinity": "TEXT",
             "notNull": true
           },
           {
             "fieldPath": "cyclePhase",
             "columnName": "cyclePhase",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "symptoms",
+            "columnName": "symptoms",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -39,16 +45,16 @@
             "notNull": false
           },
           {
-            "fieldPath": "symptoms",
-            "columnName": "symptoms",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
             "fieldPath": "isPeriodStart",
             "columnName": "isPeriodStart",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "cycleLength",
+            "columnName": "cycleLength",
+            "affinity": "INTEGER",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -64,7 +70,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7aed16ca3f56f2cb9468f6985f5a219a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a2b71a9cbd10ebc5f8364e5dfdfc2723')"
     ]
   }
 }

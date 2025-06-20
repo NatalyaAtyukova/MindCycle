@@ -26,103 +26,70 @@ import org.threeten.bp.format.DateTimeFormatter
 @Composable
 fun EntriesListScreen(
     entries: List<MoodEntry>,
-    onNavigateBack: () -> Unit,
-    onEditEntry: (MoodEntry) -> Unit,
-    modifier: Modifier = Modifier
+    onDeleteEntry: (MoodEntry) -> Unit,
+    onNavigateBack: () -> Unit
 ) {
-    var selectedEntry by remember { mutableStateOf<MoodEntry?>(null) }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        "Все записи",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Назад")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        }
-    ) { padding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            // Статистика
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        "Общая статистика",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        StatItem("Всего записей", entries.size.toString())
-                        StatItem("Среднее настроение", 
-                            when {
-                                entries.isEmpty() -> "Нет данных"
-                                entries.map { it.moodLevel.ordinal }.average() < 1.5 -> "😫"
-                                entries.map { it.moodLevel.ordinal }.average() < 2.5 -> "😔"
-                                entries.map { it.moodLevel.ordinal }.average() < 3.5 -> "😐"
-                                entries.map { it.moodLevel.ordinal }.average() < 4.5 -> "🙂"
-                                else -> "😊"
-                            }
-                        )
-                    }
-                }
-            }
-
-            // Список записей
-            LazyColumn(
-                modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(entries.sortedByDescending { it.date }) { entry ->
-                    EntryCard(
-                        entry = entry,
-                        onClick = { selectedEntry = entry }
-                    )
-                }
-            }
-        }
-    }
-
-    // Диалог с деталями записи
-    selectedEntry?.let { entry ->
-        EntryDetailsDialog(
-            entry = entry,
-            onDismiss = { selectedEntry = null },
-            onEdit = {
-                selectedEntry = null
-                onEditEntry(entry)
-            }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Заголовок
+        Text(
+            text = "Список записей",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
         )
+
+        // Список записей
+        LazyColumn(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(entries.sortedByDescending { it.date }) { entry ->
+                Card(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp)
+                    ) {
+                        Text(
+                            text = entry.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text("Настроение: ${entry.moodLevel}")
+                        Text("Фаза цикла: ${entry.cyclePhase}")
+                        if (entry.symptoms.isNotEmpty()) {
+                            Text("Симптомы: ${entry.symptoms.joinToString(", ")}")
+                        }
+                        entry.notes?.let { Text("Заметки: $it") }
+                        if (entry.isPeriodStart) {
+                            Text("Начало менструации")
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Button(
+                            onClick = { onDeleteEntry(entry) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error
+                            )
+                        ) {
+                            Text("Удалить")
+                        }
+                    }
+                }
+            }
+        }
+
+        // Кнопка возврата
+        Button(
+            onClick = onNavigateBack,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 16.dp)
+        ) {
+            Text("Назад")
+        }
     }
 }
 
@@ -162,6 +129,7 @@ private fun EntryCard(
                             MoodLevel.BAD -> "😔"
                             MoodLevel.NEUTRAL -> "😐"
                             MoodLevel.GOOD -> "🙂"
+                            MoodLevel.VERY_GOOD -> "😃"
                             MoodLevel.EXCELLENT -> "😊"
                         },
                         style = MaterialTheme.typography.titleMedium
@@ -233,6 +201,7 @@ private fun EntryDetailsDialog(
                             MoodLevel.BAD -> "😔"
                             MoodLevel.NEUTRAL -> "😐"
                             MoodLevel.GOOD -> "🙂"
+                            MoodLevel.VERY_GOOD -> "😃"
                             MoodLevel.EXCELLENT -> "😊"
                         },
                         style = MaterialTheme.typography.headlineMedium
@@ -277,13 +246,13 @@ private fun EntryDetailsDialog(
                     }
                 }
 
-                if (entry.note.isNotEmpty()) {
+                if (!entry.notes.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         "Заметка",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Text(entry.note)
+                    Text(entry.notes ?: "")
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

@@ -6,379 +6,266 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import com.vpn.mindcycle.data.model.CyclePhase
+import com.vpn.mindcycle.data.model.CyclePrediction
 import com.vpn.mindcycle.data.model.MoodEntry
-import com.vpn.mindcycle.data.model.MoodLevel
-import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
+import org.threeten.bp.LocalDateTime
 import org.threeten.bp.YearMonth
-import org.threeten.bp.format.TextStyle
 import org.threeten.bp.format.DateTimeFormatter
+import org.threeten.bp.temporal.ChronoUnit
+import org.threeten.bp.temporal.WeekFields
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CalendarScreen(
     entries: List<MoodEntry>,
-    onAddEntry: () -> Unit,
-    onViewAllEntries: () -> Unit,
-    modifier: Modifier = Modifier
+    cyclePrediction: CyclePrediction?,
+    onAddEntry: (MoodEntry) -> Unit,
+    onDeleteEntry: (MoodEntry) -> Unit,
+    onNavigateToAddEntry: () -> Unit,
+    onNavigateToEntriesList: () -> Unit
 ) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
+    var showDayDetails by remember { mutableStateOf(false) }
     var selectedEntry by remember { mutableStateOf<MoodEntry?>(null) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        selectedDate.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = { selectedDate = selectedDate.minusMonths(1) }) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "Предыдущий месяц")
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { selectedDate = selectedDate.plusMonths(1) }) {
-                        Icon(Icons.Filled.ArrowForward, contentDescription = "Следующий месяц")
-                    }
-                    IconButton(onClick = onViewAllEntries) {
-                        Icon(Icons.Filled.List, contentDescription = "Все записи")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddEntry,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = Color.White
-            ) {
-                Icon(Icons.Default.Add, contentDescription = "Добавить запись")
-            }
-        }
-    ) { padding ->
-        Column(
-            modifier = modifier
-                .fillMaxSize()
-                .padding(padding)
-                .background(MaterialTheme.colorScheme.background)
-        ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Заголовок
+        Text(
+            text = "Календарь",
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
+        // Предсказание цикла
+        cyclePrediction?.let { prediction ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
+                    .padding(bottom = 16.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        "Статистика за месяц",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary
+                        text = "Предсказание цикла",
+                        style = MaterialTheme.typography.titleMedium
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        StatItem("Записей", entries.size.toString())
-                        StatItem("Среднее настроение", 
-                            when {
-                                entries.map { it.moodLevel.ordinal }.average().isNaN() -> "Нет данных"
-                                entries.map { it.moodLevel.ordinal }.average() < 1.5 -> "😫"
-                                entries.map { it.moodLevel.ordinal }.average() < 2.5 -> "😔"
-                                entries.map { it.moodLevel.ordinal }.average() < 3.5 -> "😐"
-                                entries.map { it.moodLevel.ordinal }.average() < 4.5 -> "🙂"
-                                else -> "😊"
-                            }
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        StatItem("Частая фаза", entries.groupBy { it.cyclePhase }.maxByOrNull { it.value.size }?.key?.toString() ?: "Не выбрано")
-                        StatItem("Частый симптом", entries.flatMap { it.symptoms }.groupBy { it }.maxByOrNull { it.value.size }?.key ?: "")
-                    }
-                }
-            }
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс").forEach { day ->
-                    Text(
-                        text = day,
-                        modifier = Modifier.weight(1f),
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
-            }
-
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(7),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                items((1 until selectedDate.dayOfWeek.value).toList()) {
-                    Box(modifier = Modifier.aspectRatio(1f))
-                }
-
-                items((1..selectedDate.lengthOfMonth()).toList()) { day ->
-                    val date = selectedDate.withDayOfMonth(day)
-                    val dayEntry = entries.find { it.date == date }
-                    CalendarDay(
-                        date = date,
-                        entry = dayEntry,
-                        isSelected = date == selectedDate,
-                        onClick = { selectedEntry = dayEntry }
-                    )
+                    Text("Следующая менструация: ${prediction.nextPeriodStart.toLocalDate()}")
+                    Text("Овуляция: ${prediction.nextOvulation.toLocalDate()}")
+                    Text("Средняя длительность цикла: ${prediction.averageCycleLength} дней")
                 }
             }
         }
-    }
 
-    selectedEntry?.let { entry ->
-        DayDetailsDialog(
-            date = selectedDate,
-            entry = entry,
-            onDismiss = { selectedEntry = null },
-            onAddEntry = {
-                selectedEntry = null
-                onAddEntry()
-            }
-        )
-    }
-}
-
-@Composable
-private fun StatItem(label: String, value: String) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-        )
-        Text(
-            text = value,
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.onSurface
-        )
-    }
-}
-
-@Composable
-fun CalendarDay(
-    date: LocalDate,
-    entry: MoodEntry?,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .aspectRatio(1f)
-            .padding(4.dp)
-            .clip(CircleShape)
-            .background(
-                when {
-                    isSelected -> MaterialTheme.colorScheme.primary
-                    entry != null -> MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-                    else -> Color.Transparent
-                }
-            )
-            .clickable(onClick = onClick),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+        // Кнопки навигации
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(
-                text = date.dayOfMonth.toString(),
-                style = MaterialTheme.typography.bodyMedium,
-                color = when {
-                    isSelected -> Color.White
-                    else -> MaterialTheme.colorScheme.onSurface
-                }
-            )
-            if (entry != null) {
-                Text(
-                    text = when (entry.moodLevel) {
-                        MoodLevel.VERY_BAD -> "😫"
-                        MoodLevel.BAD -> "😔"
-                        MoodLevel.NEUTRAL -> "😐"
-                        MoodLevel.GOOD -> "🙂"
-                        MoodLevel.EXCELLENT -> "😊"
-                    },
-                    style = MaterialTheme.typography.bodySmall
-                )
+            Button(onClick = onNavigateToAddEntry) {
+                Text("Добавить запись")
+            }
+            Button(onClick = onNavigateToEntriesList) {
+                Text("Список записей")
             }
         }
-    }
-}
 
-@Composable
-fun DayDetailsDialog(
-    date: LocalDate,
-    entry: MoodEntry?,
-    onDismiss: () -> Unit,
-    onAddEntry: () -> Unit
-) {
-    Dialog(onDismissRequest = onDismiss) {
+        // Статистика
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            shape = RoundedCornerShape(16.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
-            )
+                .padding(bottom = 16.dp)
         ) {
             Column(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = date.format(DateTimeFormatter.ofPattern("d MMMM yyyy")),
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.primary
+                    text = "Статистика",
+                    style = MaterialTheme.typography.titleLarge
                 )
-                
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Всего записей: ${entries.size}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                val averageMood = entries.map { it.moodLevel.ordinal }.average()
+                Text(
+                    text = "Среднее настроение: ${String.format("%.1f", averageMood)}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+        }
 
-                if (entry != null) {
+        // Календарь
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                // Здесь будет реализация календаря
+                val currentMonth = YearMonth.from(selectedDate)
+                val firstDayOfMonth = currentMonth.atDay(1)
+                val lastDayOfMonth = currentMonth.atEndOfMonth()
+                val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
+                val daysInMonth = lastDayOfMonth.dayOfMonth
+                val firstDayOfMonthWeekday = firstDayOfMonth.dayOfWeek.value
+                val offsetDays = (firstDayOfMonthWeekday - firstDayOfWeek.value + 7) % 7
+
+                Column {
+                    // Заголовок месяца
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "Настроение",
-                            style = MaterialTheme.typography.titleMedium
+                            text = currentMonth.format(DateTimeFormatter.ofPattern("MMMM yyyy")),
+                            style = MaterialTheme.typography.titleLarge
                         )
-                        Text(
-                            when (entry.moodLevel) {
-                                MoodLevel.VERY_BAD -> "😫"
-                                MoodLevel.BAD -> "😔"
-                                MoodLevel.NEUTRAL -> "😐"
-                                MoodLevel.GOOD -> "🙂"
-                                MoodLevel.EXCELLENT -> "😊"
-                            },
-                            style = MaterialTheme.typography.headlineMedium
-                        )
+                        IconButton(onClick = { /* TODO: Добавить навигацию по месяцам */ }) {
+                            Icon(Icons.Default.Add, contentDescription = "Следующий месяц")
+                        }
                     }
 
-                    Spacer(modifier = Modifier.height(8.dp))
-
+                    // Дни недели
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.SpaceEvenly
                     ) {
-                        Text(
-                            "Фаза цикла",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            when (entry.cyclePhase) {
-                                CyclePhase.MENSTRUATION -> "Менструация"
-                                CyclePhase.FOLLICULAR -> "Фолликулярная фаза"
-                                CyclePhase.OVULATION -> "Овуляция"
-                                CyclePhase.LUTEAL -> "Лютеиновая фаза"
-                                CyclePhase.PMS -> "ПМС"
-                                CyclePhase.NONE -> "Не выбрано"
-                            }
-                        )
-                    }
-
-                    if (entry.symptoms.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "Симптомы",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        entry.symptoms.forEach { symptom ->
+                        val weekDays = listOf("Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс")
+                        weekDays.forEach { day ->
                             Text(
-                                "• $symptom",
-                                modifier = Modifier.padding(start = 8.dp, top = 4.dp)
+                                text = day,
+                                modifier = Modifier.weight(1f),
+                                textAlign = TextAlign.Center,
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
                     }
 
-                    if (entry.note.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            "Заметка",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(entry.note)
+                    // Сетка календаря
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(7),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // Пустые ячейки в начале
+                        items(offsetDays) {
+                            Box(modifier = Modifier.aspectRatio(1f))
+                        }
+
+                        // Дни месяца
+                        items(daysInMonth) { day ->
+                            val date = currentMonth.atDay(day + 1)
+                            val isSelected = date == selectedDate
+                            val entry = entries.find { it.date.toLocalDate() == date }
+                            val isPredictedPeriod = cyclePrediction?.let { prediction ->
+                                date.isAfter(prediction.nextPeriodStart.toLocalDate().minusDays(1)) &&
+                                date.isBefore(prediction.nextPeriodEnd.toLocalDate().plusDays(1))
+                            } ?: false
+                            val isPredictedOvulation = cyclePrediction?.let { prediction ->
+                                date == prediction.nextOvulation.toLocalDate()
+                            } ?: false
+
+                            Box(
+                                modifier = Modifier
+                                    .aspectRatio(1f)
+                                    .padding(2.dp)
+                                    .background(
+                                        when {
+                                            isPredictedPeriod -> Color(0xFFFFE4E1)
+                                            isPredictedOvulation -> Color(0xFFE6E6FA)
+                                            isSelected -> MaterialTheme.colorScheme.primaryContainer
+                                            else -> Color.Transparent
+                                        }
+                                    )
+                                    .clickable {
+                                        selectedDate = date
+                                        selectedEntry = entry
+                                        showDayDetails = true
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = (day + 1).toString(),
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    entry?.let {
+                                        Text(
+                                            text = it.moodLevel.name,
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
-                } else {
-                    Text(
-                        "Нет записей на этот день",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = onAddEntry,
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = Color.White
-                    ),
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Text(
-                        if (entry != null) "Редактировать" else "Добавить запись",
-                        modifier = Modifier.padding(vertical = 8.dp)
-                    )
                 }
             }
         }
     }
-}
 
-data class MonthlyStats(
-    val totalEntries: Int,
-    val averageMood: Double,
-    val mostCommonPhase: CyclePhase,
-    val mostCommonSymptoms: String
-) 
+    // Диалог с деталями дня
+    if (showDayDetails) {
+        val dayEntries = entries.filter { it.date.toLocalDate() == selectedDate }
+        AlertDialog(
+            onDismissRequest = { showDayDetails = false },
+            title = { Text("Записи за ${selectedDate}") },
+            text = {
+                Column {
+                    dayEntries.forEach { entry ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(8.dp)
+                            ) {
+                                Text("Настроение: ${entry.moodLevel}")
+                                Text("Фаза цикла: ${entry.cyclePhase}")
+                                if (entry.symptoms.isNotEmpty()) {
+                                    Text("Симптомы: ${entry.symptoms.joinToString(", ")}")
+                                }
+                                entry.notes?.let { Text("Заметки: $it") }
+                                if (entry.isPeriodStart) {
+                                    Text("Начало менструации")
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showDayDetails = false }) {
+                    Text("Закрыть")
+                }
+            }
+        )
+    }
+} 
