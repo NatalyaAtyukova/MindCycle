@@ -14,9 +14,10 @@ data class MoodEntry(
     val date: LocalDateTime,
     val moodLevel: MoodLevel,
     val cyclePhase: CyclePhase,
-    val notes: String? = null,
+    val note: String? = null,
     val symptoms: List<String> = emptyList(),
-    val isPeriodStart: Boolean = false
+    val isPeriodStart: Boolean = false,
+    val isPeriod: Boolean = false
 ) {
     init {
         require(date <= LocalDateTime.now()) { "Date cannot be in the future" }
@@ -27,7 +28,7 @@ data class MoodEntry(
             date: LocalDateTime = LocalDateTime.now(),
             moodLevel: MoodLevel,
             cyclePhase: CyclePhase,
-            notes: String? = null,
+            note: String? = null,
             symptoms: List<String> = emptyList(),
             isPeriodStart: Boolean = false
         ): MoodEntry {
@@ -35,7 +36,7 @@ data class MoodEntry(
                 date = date,
                 moodLevel = moodLevel,
                 cyclePhase = cyclePhase,
-                notes = notes,
+                note = note,
                 symptoms = symptoms,
                 isPeriodStart = isPeriodStart
             )

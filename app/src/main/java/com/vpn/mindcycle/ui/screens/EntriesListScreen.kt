@@ -63,7 +63,9 @@ fun EntriesListScreen(
                         if (entry.symptoms.isNotEmpty()) {
                             Text("Симптомы: ${entry.symptoms.joinToString(", ")}")
                         }
-                        entry.notes?.let { Text("Заметки: $it") }
+                        if (!entry.note.isNullOrEmpty()) {
+                            Text("Заметки: $entry.note")
+                        }
                         if (entry.isPeriodStart) {
                             Text("Начало менструации")
                         }
@@ -246,13 +248,13 @@ private fun EntryDetailsDialog(
                     }
                 }
 
-                if (!entry.notes.isNullOrEmpty()) {
+                if (!entry.note.isNullOrEmpty()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        "Заметка",
+                        "Заметки",
                         style = MaterialTheme.typography.titleMedium
                     )
-                    Text(entry.notes ?: "")
+                    Text(entry.note)
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))

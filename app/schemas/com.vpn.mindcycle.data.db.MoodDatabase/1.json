@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "7aed16ca3f56f2cb9468f6985f5a219a",
+    "identityHash": "e1863c66509c562b7b8a303f660ff668",
     "entities": [
       {
         "tableName": "mood_entries",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` TEXT NOT NULL, `moodLevel` INTEGER NOT NULL, `cyclePhase` TEXT NOT NULL, `notes` TEXT, `symptoms` TEXT NOT NULL, `isPeriodStart` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `date` TEXT NOT NULL, `moodLevel` INTEGER NOT NULL, `cyclePhase` TEXT NOT NULL, `note` TEXT, `symptoms` TEXT NOT NULL, `isPeriodStart` INTEGER NOT NULL, `isPeriod` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "id",
@@ -33,8 +33,8 @@
             "notNull": true
           },
           {
-            "fieldPath": "notes",
-            "columnName": "notes",
+            "fieldPath": "note",
+            "columnName": "note",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -47,6 +47,12 @@
           {
             "fieldPath": "isPeriodStart",
             "columnName": "isPeriodStart",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isPeriod",
+            "columnName": "isPeriod",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -64,7 +70,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7aed16ca3f56f2cb9468f6985f5a219a')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e1863c66509c562b7b8a303f660ff668')"
     ]
   }
 }

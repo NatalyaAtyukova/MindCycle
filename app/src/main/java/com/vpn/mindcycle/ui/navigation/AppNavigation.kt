@@ -47,11 +47,6 @@ fun AppNavigation(
                 CalendarScreen(
                     entries = entries,
                     cyclePrediction = cyclePrediction,
-                    onAddEntry = { entry ->
-                        onAddEntry(entry)
-                        navController.navigateUp()
-                    },
-                    onDeleteEntry = onDeleteEntry,
                     onNavigateToAddEntry = {
                         navController.navigate(AppDestinations.ADD_ENTRY_ROUTE)
                     },

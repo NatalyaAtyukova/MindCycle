@@ -30,7 +30,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 val endDate = LocalDateTime.now()
                 val startDate = endDate.minus(3, ChronoUnit.MONTHS)
                 _entries.value = moodEntryDao.getEntriesBetweenDates(startDate, endDate)
-                _cyclePrediction.value = moodEntryDao.predictNextCycle()
+                // _cyclePrediction.value = moodEntryDao.predictNextCycle()
             } catch (e: Exception) {
                 throw Exception("Failed to load data: ${e.message}")
             }
@@ -42,7 +42,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 moodEntryDao.insertEntry(entry)
                 _entries.value = _entries.value + entry
-                _cyclePrediction.value = moodEntryDao.predictNextCycle()
+                // _cyclePrediction.value = moodEntryDao.predictNextCycle()
             } catch (e: Exception) {
                 throw Exception("Failed to add entry: ${e.message}")
             }
@@ -54,7 +54,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 moodEntryDao.deleteEntry(entry)
                 _entries.value = _entries.value - entry
-                _cyclePrediction.value = moodEntryDao.predictNextCycle()
+                // _cyclePrediction.value = moodEntryDao.predictNextCycle()
             } catch (e: Exception) {
                 throw Exception("Failed to delete entry: ${e.message}")
             }

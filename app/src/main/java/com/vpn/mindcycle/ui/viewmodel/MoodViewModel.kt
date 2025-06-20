@@ -36,7 +36,7 @@ class MoodViewModel(private val moodEntryDao: MoodEntryDao) : ViewModel() {
 
     private fun predictNextCycle() {
         viewModelScope.launch {
-            _cyclePrediction.value = moodEntryDao.predictNextCycle()
+            // _cyclePrediction.value = moodEntryDao.predictNextCycle()
         }
     }
 

@@ -30,6 +30,7 @@ interface MoodEntryDao {
     @androidx.room.Query("SELECT * FROM mood_entries ORDER BY date DESC LIMIT 1")
     suspend fun getLastEntry(): MoodEntry?
 
+    /*
     suspend fun predictNextCycle(): CyclePrediction? {
         try {
             val entries = getEntriesBetweenDates(
@@ -85,11 +86,12 @@ interface MoodEntryDao {
         // Higher confidence for more consistent cycles
         return 1.0 - (standardDeviation / average).coerceIn(0.0, 1.0)
     }
+    */
 }
 
 @Database(
     entities = [MoodEntry::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
