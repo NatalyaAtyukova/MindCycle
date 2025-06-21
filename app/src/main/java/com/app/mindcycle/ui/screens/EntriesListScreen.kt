@@ -66,6 +66,7 @@ private val phaseLabels = mapOf(
 fun EntriesListScreen(
     entries: List<MoodEntry>,
     onDeleteEntry: (MoodEntry) -> Unit,
+    onNavigateToEditEntry: (Long) -> Unit,
     onNavigateBack: () -> Unit
 ) {
     Column(
@@ -120,13 +121,20 @@ fun EntriesListScreen(
                             Text("Начало менструации")
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Button(
-                            onClick = { onDeleteEntry(entry) },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = MaterialTheme.colorScheme.error
-                            )
-                        ) {
-                            Text("Удалить")
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
+                                onClick = { onNavigateToEditEntry(entry.id) }
+                            ) {
+                                Text("Редактировать")
+                            }
+                            Button(
+                                onClick = { onDeleteEntry(entry) },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Text("Удалить")
+                            }
                         }
                     }
                 }

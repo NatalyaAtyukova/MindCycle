@@ -105,6 +105,9 @@ fun AppNavigation(
                 EntriesListScreen(
                     entries = entries,
                     onDeleteEntry = onDeleteEntry,
+                    onNavigateToEditEntry = { entryId ->
+                        navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=$entryId")
+                    },
                     onNavigateBack = {
                         navController.navigateUp()
                     }

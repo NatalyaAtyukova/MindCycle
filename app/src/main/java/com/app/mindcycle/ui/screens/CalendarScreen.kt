@@ -248,12 +248,13 @@ fun CalendarScreen(
                                 modifier = Modifier
                                     .aspectRatio(1f)
                                     .padding(2.dp)
+                                    .clip(RoundedCornerShape(8.dp))
                                     .background(
                                         when {
-                                            entry?.isPeriodStart == true -> Color.Red.copy(alpha = 0.5f)
-                                            isPredictedPeriod -> Color(0xFFFFE4E1)
-                                            isPredictedOvulation -> Color(0xFFE6E6FA)
                                             isSelected -> MaterialTheme.colorScheme.primaryContainer
+                                            isToday -> MaterialTheme.colorScheme.secondaryContainer
+                                            isPredictedPeriod -> Color.Red.copy(alpha = 0.3f)
+                                            isPredictedOvulation -> Color.Green.copy(alpha = 0.3f)
                                             else -> Color.Transparent
                                         }
                                     )
@@ -293,12 +294,37 @@ fun CalendarScreen(
     }
 
     if (showDayDetails && selectedEntry != null) {
-        DayDetailsDialog(
-            entry = selectedEntry!!,
+        AlertDialog(
             onDismissRequest = { showDayDetails = false },
-            onEdit = {
-                onNavigateToEditEntry(selectedEntry!!.id)
-                showDayDetails = false
+            title = { Text("Детали записи") },
+            text = {
+                Column {
+                    Text("Дата: ${selectedEntry!!.date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm"))}")
+                    Text("Настроение: ${moodLabels[selectedEntry!!.moodLevel]}")
+                    Text("Фаза цикла: ${phaseLabels[selectedEntry!!.cyclePhase]}")
+                    if (selectedEntry!!.symptoms.isNotEmpty()) {
+                        Text("Симптомы: ${selectedEntry!!.symptoms.joinToString(", ")}")
+                    }
+                    if (!selectedEntry!!.note.isNullOrEmpty()) {
+                        Text("Заметки: ${selectedEntry!!.note}")
+                    }
+                    if (selectedEntry!!.isPeriodStart) {
+                        Text("Начало менструации")
+                    }
+                }
+            },
+            confirmButton = {
+                Button(onClick = {
+                    onNavigateToEditEntry(selectedEntry!!.id)
+                    showDayDetails = false
+                }) {
+                    Text("Редактировать")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDayDetails = false }) {
+                    Text("Закрыть")
+                }
             }
         )
     }
