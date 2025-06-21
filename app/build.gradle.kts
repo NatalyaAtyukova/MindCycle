@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.vpn.mindcycle"
+    namespace = "com.app.mindcycle"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.vpn.mindcycle"
+        applicationId = "com.app.mindcycle"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
