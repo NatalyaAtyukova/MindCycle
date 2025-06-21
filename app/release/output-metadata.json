@@ -4,7 +4,7 @@
     "type": "APK",
     "kind": "Directory"
   },
-  "applicationId": "com.vpn.mindcycle",
+  "applicationId": "com.app.mindcycle",
   "variantName": "release",
   "elements": [
     {
