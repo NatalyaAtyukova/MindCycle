@@ -24,10 +24,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.ViewModelProvider
+import com.app.mindcycle.ads.YandexAdsManager
 
 class MainActivity : ComponentActivity() {
+
+    private val yandexAdsManager by lazy { YandexAdsManager() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Show App Open Ad
+        yandexAdsManager.loadAndShowAppOpenAd(this, this)
 
         setContent {
             MindCycleTheme {
@@ -84,7 +91,9 @@ class MainActivity : ComponentActivity() {
                     },
                     onDismissError = {
                         errorMessage = null
-                    }
+                    },
+                    yandexAdsManager = yandexAdsManager,
+                    activity = this
                 )
             }
         }

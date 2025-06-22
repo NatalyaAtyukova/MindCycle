@@ -21,6 +21,8 @@ import com.app.mindcycle.ui.screens.AddEntryScreen
 import com.app.mindcycle.ui.screens.CalendarScreen
 import com.app.mindcycle.ui.screens.EntriesListScreen
 import androidx.compose.material3.SnackbarDuration
+import com.app.mindcycle.ads.YandexAdsManager
+import android.app.Activity
 
 object AppDestinations {
     const val CALENDAR_ROUTE = "calendar"
@@ -38,7 +40,9 @@ fun AppNavigation(
     errorMessage: String?,
     onAddEntry: (MoodEntry) -> Unit,
     onDeleteEntry: (MoodEntry) -> Unit,
-    onDismissError: () -> Unit
+    onDismissError: () -> Unit,
+    yandexAdsManager: YandexAdsManager,
+    activity: Activity
 ) {
     val navController = rememberNavController()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -57,6 +61,7 @@ fun AppNavigation(
                         navController.navigate("${AppDestinations.ADD_ENTRY_ROUTE}?${AppDestinations.ENTRY_ID_ARG}=$entryId")
                     },
                     onNavigateToEntriesList = {
+                        yandexAdsManager.loadAndShowInterstitial(activity, activity)
                         navController.navigate(AppDestinations.ENTRIES_LIST_ROUTE)
                     }
                 )
@@ -93,6 +98,7 @@ fun AppNavigation(
                     initialDate = initialDate,
                     onSaveEntry = { entry ->
                         onAddEntry(entry)
+                        yandexAdsManager.loadAndShowInterstitial(activity, activity)
                         navController.navigateUp()
                     },
                     onNavigateBack = {

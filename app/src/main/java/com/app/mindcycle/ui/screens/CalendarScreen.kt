@@ -22,6 +22,7 @@ import com.app.mindcycle.data.model.CyclePhase
 import com.app.mindcycle.data.model.CyclePrediction
 import com.app.mindcycle.data.model.MoodEntry
 import com.app.mindcycle.data.model.MoodLevel
+import com.app.mindcycle.ui.components.AdBanner
 import org.threeten.bp.DayOfWeek
 import org.threeten.bp.LocalDate
 import org.threeten.bp.LocalDateTime
@@ -291,6 +292,9 @@ fun CalendarScreen(
                 }
             }
         }
+        // Banner Ad
+        Spacer(modifier = Modifier.height(8.dp))
+        AdBanner(modifier = Modifier.fillMaxWidth())
     }
 
     if (showDayDetails && selectedEntry != null) {
